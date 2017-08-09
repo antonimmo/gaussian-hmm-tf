@@ -157,6 +157,7 @@ class GaussianHMM(object):
             tp_prev = self._tp
             mu_prev = self._mu
             sigma_prev = self._sigma
+          print("Calculating _p0, _tp, _mu and _sigma")
           self._p0, self._tp, self._mu, self._sigma = sess.run(
             [self._p0_tf_new, self._tp_tf_new,
              self._mu_tf_new, self._sigma_tf_new],
