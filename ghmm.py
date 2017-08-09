@@ -168,10 +168,10 @@ class GaussianHMM(object):
             j = 0
             while not self._is_pos_def(self._sigma[k]):
               j += 1
-              print(j, '.. not positive definite ..')
+              # print(j, '.. not positive definite ..')
               self._sigma[k] = self._sigma[k] + 0.05 * np.array(
                 [np.identity(self._data_dim, dtype=np.float64)])*self._sigma[k]
-              print('new sigma...')
+              # print('new sigma...')
           # if j > 100:
           #   print('j = ', j)
           print("calculating post")
@@ -186,11 +186,12 @@ class GaussianHMM(object):
             tp_max = self._tp
             mu_max = self._mu
             sigma_max = self._sigma
-          print("post = ", post)
+          # print("post = ", post)
           ch_p0 = np.max(np.abs(self._p0 - p0_prev))
           ch_tp = np.max(np.abs(self._tp - tp_prev))
           ch_mu = np.max(np.abs(self._mu - mu_prev))
           ch_sigma = np.max(np.abs(self._sigma - sigma_prev))
+          print("changes: ch_p0= {}, ch_tp = {}, ch_mu = {}, ch_sigma = {}", ch_p0, ch_tp, ch_mu, ch_sigma)
           print('step = ', step, ' ', post)
           if ch_p0 < TOL and ch_tp < TOL and ch_mu < TOL and ch_sigma < TOL:
             converged = True
