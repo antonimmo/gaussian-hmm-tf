@@ -24,6 +24,7 @@ class GaussianHMM(object):
       num_states: Number of states.
       data_dim: Dimensionality of the observed data.
     """
+    print(num_states, data_dim)
     self._dir = tempfile.mkdtemp()
     self._epoch = 0
     self._graph = tf.Graph()
@@ -116,14 +117,14 @@ class GaussianHMM(object):
     dataset = DataSet(data)
     kmeans = KMeans(n_clusters=self._num_states)
     for r in range(num_runs):
-      # print('run = ', r)
+      print('run = ', r)
       converged = False
       kmeans_batch = np.concatenate(dataset.get_batch(
         min(KMEANS_NUM, dataset.num_examples)), axis=0)
       kmeans = KMeans(
         n_clusters=self._num_states, random_state=r).fit(kmeans_batch)
       self._mu = kmeans.cluster_centers_
-      # print(self._mu)
+      print(self._mu)
       self._p0 = np.ones(
         [1, self._num_states], dtype=np.float64)/self._num_states
       self._tp = np.ones([self._num_states, self._num_states],
@@ -164,12 +165,12 @@ class GaussianHMM(object):
             j = 0
             while not self._is_pos_def(self._sigma[k]):
               j += 1
-              # print('.. not positive definite ..')
+              print(j, '.. not positive definite ..')
               self._sigma[k] = self._sigma[k] + 0.05 * np.array(
                 [np.identity(self._data_dim, dtype=np.float64)])*self._sigma[k]
-              # print('new sigma...')
-          if j > 100:
-            print('j = ', j)
+              print('new sigma...')
+          # if j > 100:
+          #   print('j = ', j)
           post = np.mean(
             np.squeeze(sess.run(
               self._posterior, feed_dict={
@@ -185,18 +186,18 @@ class GaussianHMM(object):
           ch_tp = np.max(np.abs(self._tp - tp_prev))
           ch_mu = np.max(np.abs(self._mu - mu_prev))
           ch_sigma = np.max(np.abs(self._sigma - sigma_prev))
-          # print('step = ', step, ' ', post)
+          print('step = ', step, ' ', post)
           if ch_p0 < TOL and ch_tp < TOL and ch_mu < TOL and ch_sigma < TOL:
             converged = True
             break
-        # print('steps = ', step, ' ', post)
+        print('steps = ', step, ' ', post)
     self._p0 = p0_max
     self._tp = tp_max
     self._mu = mu_max
     self._sigma = sigma_max
     self._epoch += 1
     toc = time.time()
-    # print('training time : ', toc-tic, ' seconds.')
+    print('training time : ', toc-tic, ' seconds.')
     return converged
 
   # I am not sure that it works properly.
@@ -220,7 +221,7 @@ class GaussianHMM(object):
         self._tp_tf: self._tp, self._mu_tf: self._mu,
         self._sigma_tf: self._sigma}
       toc = time.time()
-      # print('inference time : ', toc-tic, ' seconds.')
+      print('inference time : ', toc-tic, ' seconds.')
       return sess.run(self._pstates, feed_dict=feed_dict)
 
   def generate(self, num_samples):
@@ -414,7 +415,7 @@ class GaussianHMM(object):
       max_var = 20.0
       gamma_mv = tf.reduce_mean(self._gamma, axis=1, name='gamma_mv')
       # self._gamma_mv = gamma_mv
-      # print('gamma_mv shape : ', gamma_mv.get_shape())
+      print('gamma_mv shape : ', gamma_mv.get_shape())
       xi_mv = tf.reduce_mean(self._xi, axis=1, name='xi_mv')
       # update the initial state probabilities
       self._p0_tf_new = tf.transpose(tf.expand_dims(gamma_mv[0], -1))
