@@ -24,7 +24,7 @@ class GaussianHMM(object):
       num_states: Number of states.
       data_dim: Dimensionality of the observed data.
     """
-    print(num_states, data_dim)
+    print("GaussianHMM", num_states, data_dim)
     self._dir = tempfile.mkdtemp()
     self._epoch = 0
     self._graph = tf.Graph()
@@ -124,7 +124,7 @@ class GaussianHMM(object):
       kmeans = KMeans(
         n_clusters=self._num_states, random_state=r).fit(kmeans_batch)
       self._mu = kmeans.cluster_centers_
-      print(self._mu)
+      print("mu (kmeans.cluster_centers_)", self._mu)
       self._p0 = np.ones(
         [1, self._num_states], dtype=np.float64)/self._num_states
       self._tp = np.ones([self._num_states, self._num_states],
@@ -134,6 +134,7 @@ class GaussianHMM(object):
       with tf.Session(graph=self._graph) as sess:
         sess.run(tf.global_variables_initializer())
         for step in range(max_steps):
+          print("step", step)
           if batch_size is None:
             feed_dict = {
               self._dataset_tf: dataset.data, self._p0_tf: self._p0,
@@ -161,6 +162,7 @@ class GaussianHMM(object):
              self._mu_tf_new, self._sigma_tf_new],
             feed_dict=feed_dict)
           # check if the sigma is positive definite
+          print("sigma check")
           for k in range(self._num_states):
             j = 0
             while not self._is_pos_def(self._sigma[k]):
@@ -171,6 +173,7 @@ class GaussianHMM(object):
               print('new sigma...')
           # if j > 100:
           #   print('j = ', j)
+          print("calculating post")
           post = np.mean(
             np.squeeze(sess.run(
               self._posterior, feed_dict={
@@ -182,6 +185,7 @@ class GaussianHMM(object):
             tp_max = self._tp
             mu_max = self._mu
             sigma_max = self._sigma
+          print("post = ", post)
           ch_p0 = np.max(np.abs(self._p0 - p0_prev))
           ch_tp = np.max(np.abs(self._tp - tp_prev))
           ch_mu = np.max(np.abs(self._mu - mu_prev))
