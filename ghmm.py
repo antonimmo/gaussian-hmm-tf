@@ -123,13 +123,13 @@ class GaussianHMM(object):
         min(KMEANS_NUM, dataset.num_examples)), axis=0)
       kmeans = KMeans(
         n_clusters=self._num_states, random_state=r).fit(kmeans_batch)
-      self._mu = kmeans.cluster_centers_
+      self._mu = mu_max = kmeans.cluster_centers_
       print("mu (kmeans.cluster_centers_)", self._mu)
-      self._p0 = np.ones(
+      self._p0 = p0_max = np.ones(
         [1, self._num_states], dtype=np.float64)/self._num_states
-      self._tp = np.ones([self._num_states, self._num_states],
+      self._tp = tp_max = np.ones([self._num_states, self._num_states],
                          dtype=np.float64)/self._num_states
-      self._sigma = np.array(
+      self._sigma = sigma_max = np.array(
         [np.identity(self._data_dim, dtype=np.float64)] * self._num_states)
       with tf.Session(graph=self._graph) as sess:
         sess.run(tf.global_variables_initializer())
@@ -197,9 +197,9 @@ class GaussianHMM(object):
             converged = True
             break
         print('steps = ', step, ' ', post)
+    self._mu = mu_max
     self._p0 = p0_max
     self._tp = tp_max
-    self._mu = mu_max
     self._sigma = sigma_max
     self._epoch += 1
     toc = time.time()
